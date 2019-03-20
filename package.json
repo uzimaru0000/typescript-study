@@ -1,0 +1,24 @@
+{
+  "name": "study",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uzimaru0000/typescript-study.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uzimaru0000/typescript-study/issues"
+  },
+  "homepage": "https://github.com/uzimaru0000/typescript-study#readme",
+  "devDependencies": {
+    "ts-node": "^8.0.3",
+    "typescript": "^3.3.4000"
+  }
+}
