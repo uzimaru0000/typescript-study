@@ -2,14 +2,14 @@
 
 ---
 
-# 今回の方針
+## 今回の方針
 
 構文はほとんど JS と同じなので、  
 型のことをメインにやっていきます
 
 ---
 
-# 動作環境
+## 動作環境
 
 ```sh
 $ npm install -D typescript
@@ -18,7 +18,7 @@ $ npm install -D ts-node
 
 ---
 
-# もくじ
+## もくじ
 
 1. 基本的な型
 2. リテラル型
@@ -27,20 +27,12 @@ $ npm install -D ts-node
 
 ---
 
-# 基本的な型
+## 基本的な型
 
 TypeScript には以下のような型が存在します。
 
-- Boolean
-- Number
-- String
-- Array
-- Tuple
-- Enum
-- Object
-- Void
-- Null and Undefined
-- Never
+Boolean, Number, String, Array, Tuple,  
+Enum, Object, Void, Null and Undefined
 
 +++
 
@@ -58,6 +50,11 @@ const name: string = "uzimaru";
 
 真偽値を表現する型  
 `true` と `false` がある
+
+```ts
+let t: boolean = true;
+let f: boolean = false;
+```
 
 +++
 
@@ -132,6 +129,10 @@ enum Color {
 
 let color: Color = Color.Red; // color's value is 0
 ```
+
++++
+
+## Enum
 
 値を指定すると要素がその値になる
 
