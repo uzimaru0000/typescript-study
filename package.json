@@ -1,10 +1,13 @@
 {
-  "name": "study",
+  "name": "ts-study",
   "version": "1.0.0",
-  "description": "",
+  "description": "typescript study",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "repl": "ts-node",
+    "preview": "docker run --name pitch_local --rm -p 8080:80 -v `pwd`:/src:ro -d uzimaru0000/gitpitch_local && open http://localhost:8080",
+    "stop": "docker stop pitch_local"
   },
   "repository": {
     "type": "git",
@@ -18,7 +21,28 @@
   },
   "homepage": "https://github.com/uzimaru0000/typescript-study#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.11",
+    "jest": "^24.5.0",
+    "ts-jest": "^24.0.0",
     "ts-node": "^8.0.3",
     "typescript": "^3.3.4000"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+        "ts",
+        "tsx",
+        "js"
+    ],
+    "transform": {
+        "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "globals": {
+        "ts-jest": {
+            "tsConfigFile": "tsconfig.json"
+        }
+    },
+    "testMatch": [
+        "**/__tests__/*.+(ts|tsx|js)"
+    ]
   }
 }
