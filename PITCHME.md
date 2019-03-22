@@ -5,15 +5,23 @@
 ## 今回の方針
 
 構文はほとんど JS と同じなので、  
-型のことをメインにやっていきます
+**型**のことをメインにやっていきます
 
 ---
 
 ## 動作環境
 
 ```sh
+$ npm init
 $ npm install -D typescript
 $ npm install -D ts-node
+```
+
+or
+
+```sh
+$ git clone git@github.com:uzimaru0000/typescript-study
+$ npm i
 ```
 
 ---
@@ -21,7 +29,7 @@ $ npm install -D ts-node
 ## もくじ
 
 1. 基本的な型
-2. リテラル型
+2. class と interface
 3. ジェネリクス
 4. 特殊な型
 
@@ -42,14 +50,14 @@ Enum, Object, Void, Null and Undefined
 const name: string = "uzimaru";
 ```
 
-`変数名`: `型名` で宣言する
+_変数名_: _型名_ で宣言する
 
 +++
 
 ## Boolean
 
 真偽値を表現する型  
-`true` と `false` がある
+_true_ と _false_ がある
 
 ```ts
 let t: boolean = true;
@@ -75,14 +83,14 @@ let octal: number = 0o744;
 ## String
 
 文字列を表現する型  
-`"` か `'` で囲って表す
+_"_ か _'_ で囲って表す
 
 ```ts
 let color: string = "blue";
 color = "red";
 ```
 
-\` で囲うと `${ expr }` で変数を埋め込める
+\` で囲うと _\${ expr }_ で変数を埋め込める
 
 ```ts
 let age: number = 20;
@@ -182,16 +190,332 @@ function example(): void {
 
 ## Null and Undefined
 
-`null` と `undefined` を表す型  
-`null` と `undefined` はすべての型のサブタイプなのでどの変数にも代入可能です。  
-しかし、`--strictNullChecks` オプションをつけると明示的に`null`と`undefined` がないと代入できなくなります。
+_--strictNullChecks_ オプションをつけると明示的に _null_ と _undefined_ がないと代入できなくなります。
 
 ```ts
 let n: null = null;
-let undefined: undefined = undefined;
+let u: undefined = undefined;
 
 // --strictNullChecks
 let num: number = null; // error!!
 ```
 
+> 可能であれば--strictNullChecks を使用することをお勧めします
+
 ---
+
+## Class と Interface
+
+TypeScript には _Class_ と _Interface_ があります。  
+他言語の _Class_ と _Interface_ とおおよそ同じです
+
+---
+
+## Class
+
+```ts
+class Greeter {
+  greeting: string; // メンバ（アクセス修飾子がないとpublic)
+
+  // コンストラクタ
+  constructor(message: string) {
+    this.greeting = message;
+  }
+
+  // メソッド
+  greet(): string {
+    return "Hello, " + this.greeting;
+  }
+}
+```
+
+上のような構文で定義する
+
++++
+
+## 継承
+
+```ts
+class Animal {
+  // デフォルト引数が0
+  move(distanceInMeters: number = 0) {
+    console.log(`Animal moved ${distanceInMeters}m.`);
+  }
+}
+
+// Animalクラスを継承
+class Dog extends Animal {
+  bark() {
+    console.log("Woof! Woof!");
+  }
+}
+```
+
+クラス名の後ろに _extends_ をつけるとそのクラスを継承する。
+
++++
+
+## 修飾子
+
+_public_, _private_, _protected_, _readonly_ がある
+
++++
+
+## public
+
+- どこからでもアクセスができる
+
+```ts
+class Sample {
+  public name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  greet(): string {
+    return `Hello, My name is ${this.name}.`;
+  }
+}
+
+const sample = new Sample("uzimaru");
+sample.name = "shuji";
+console.log(sample.greet()); // output > Hello, My name is shuji.
+```
+
++++
+
+## private
+
+- クラス内のみからアクセスができる
+
+```ts
+class Sample {
+  private name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  greet(): string {
+    return `Hello, My name is ${this.name}.`;
+  }
+}
+
+const sample = new Sample("uzimaru");
+sample.name = "shuji"; // error!
+console.log(sample.greet()); // output > Hello, My name is uzimaru.
+```
+
++++
+
+## protected
+
+- クラス内とそのクラスを継承したクラスからアクセスができる
+
+```ts
+class Sample {
+  protected name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  greet(): string {
+    return `Hello, My name is ${this.name}.`;
+  }
+}
+
+class ExSample extends Sample {
+  sayName() {
+    console.log(this.name);
+  }
+}
+
+const sample = new ExSample("uzimaru");
+sample.name = "shuji"; // error!
+console.log(sample.sayName()); // output > uzimaru.
+```
+
++++
+
+## readonly
+
+- 読み取り専用 宣言時かコンストラクタで初期化する
+
+```ts
+class Sample {
+  readonly name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  greet(): string {
+    return `Hello, My name is ${this.name}.`;
+  }
+}
+
+const sample = new Sample("uzimaru");
+sample.name = "shuji"; // error!
+console.log(sample.name); // output > uzimaru
+```
+
++++
+
+## アクセサ
+
+メンバのアクセス方法として _getter/setter_ があります。
+
+```ts
+class Person {
+  constructor(private firstName: string, private lastName: string) {}
+
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  set fullName(name: string) {
+    const [first, last] = name.split(" ");
+    this.firstName = first;
+    this.lastName = last;
+  }
+}
+```
+
++++
+
+## 静的プロパティ / メソッド
+
+クラス上に現れる、メンバ / メソッド  
+アクセスする際は  
+_クラス名.(メンバ名 | メソッド名)_  
+とする
+
+```ts
+class Grid {
+  static origin = { x: 0, y: 0 };
+  calculateDistanceFromOrigin(point: { x: number; y: number }) {
+    let xDist = point.x - Grid.origin.x;
+    let yDist = point.y - Grid.origin.y;
+    return Math.sqrt(xDist * xDist + yDist * yDist) / this.scale;
+  }
+  constructor(public scale: number) {}
+}
+```
+
++++
+
+## 抽象クラス
+
+継承するクラスのために用意される基底クラス  
+直接インスタンス化できません  
+インターフェースとの違いはメンバに詳細な実装を含めれます
+
+```ts
+abstract class Animal {
+  abstract makeSound(): void;
+  move(): void {
+    console.log("roaming the earth...");
+  }
+}
+```
+
++++
+
+## 抽象クラスとインターフェースの違い
+
+|        抽象クラス        | インターフェース |
+| :----------------------: | :--------------: |
+|      実装を含めれる      | 実装を含めれない |
+| アクセス修飾子をつけれる |  すべて public   |
+
+---
+
+## Interface
+
+```ts
+function printLabel(labelledObj: { label: string }) {
+  console.log(labelledObj.label);
+}
+```
+
+を
+
+```ts
+interface LabelledValue {
+  label: string;
+}
+function printLabel(labelledObj: LabelledValue) {
+  console.log(labelledObj.label);
+}
+```
+
+のように書ける
+
++++
+
+## 任意のプロパティ
+
+```ts
+interface SquareConfig {
+  color?: string;
+  width?: number;
+}
+```
+
+任意にしたいプロパティの末尾に _?_ をつけます。  
+使うことのできるプロパティを表すことができ  
+無いプロパティが利用されるのを防ぎます。
+
++++
+
+## 読み込み専用プロパティ
+
+```ts
+interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+```
+
+_readonly_ をつけることで読み込み専用のプロパティになります
+
++++
+
+## Readonly vs Const
+
+使い分けは _const_ は変数に、_readonly_ はプロパティにつかいます
+
++++
+
+## Function 型
+
+プロパティを持つオブジェクトを定義することに加え  
+関数の型を定義することができる
+
+```ts
+interface SearchFunc {
+  (source: string, subString: string): boolean;
+}
+```
+
+型チェックにおいては引数の名前は一致しなくても大丈夫です
+
++++
+
+## インターフェースの実装
+
+クラスにインターフェースを実装させることができます
+
+```ts
+interface ClockInterface {
+  currentTime: Date;
+  setTime(d: Date);
+}
+class Clock implements ClockInterface {
+  currentTime: Date;
+  setTime(d: Date) {
+    this.currentTime = d;
+  }
+  constructor(h: number, m: number) {}
+}
+```
+
+**interface は必ず public です**
