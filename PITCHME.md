@@ -5,7 +5,7 @@
 ## 今回の方針
 
 構文はほとんど JS と同じなので、  
-**型**のことをメインにやっていきます
+**型** のことをメインにやっていきます
 
 ---
 
@@ -48,6 +48,10 @@ Enum, Object, Void, Null and Undefined
 
 ```ts
 const name: string = "uzimaru";
+const add = (a: number, b: number): number => a + b;
+function sub(a: number, b: number): number {
+  return a - b;
+}
 ```
 
 _変数名_: _型名_ で宣言する
@@ -201,6 +205,38 @@ let num: number = null; // error!!
 ```
 
 > 可能であれば--strictNullChecks を使用することをお勧めします
+
++++
+
+## Never 型
+
+- 全体に return されない関数（無限ループ）
+- 常に throw する関数
+
+の戻り値の型に使われるなど
+
++++
+
+## 利用例
+
+```ts
+function foo(x: string | number): boolean {
+  if (typeof x === "string") {
+    return true;
+  } else if (typeof x === "number") {
+    return false;
+  }
+
+  return fail("Unexhaustive!");
+}
+
+function fail(message: string): never {
+  throw new Error(message);
+}
+```
+
+網羅チェックに使う  
+引数に対して網羅的なチャックがされていなかったらエラーを返す
 
 ---
 
@@ -519,3 +555,382 @@ class Clock implements ClockInterface {
 ```
 
 **interface は必ず public です**
+
+---
+
+## ジェネリクス
+
+1 つの型ではなく様々な型で動作する関数 ・クラス・インターフェイスを作成できる仕組み
+
++++
+
+## ジェネリクスの書き方
+
+```ts
+function identity<T>(arg: T): T {
+  return arg;
+}
+const identity = <T>(arg: T): T => arg;
+```
+
+_function_ のときは _function_ _関数名<型名>(引数)..._  
+_アロー関数_ のときは _<型名>(引数)..._  
+で宣言する
+
++++
+
+## ジェネリクスを使う理由
+
+Collection 型 (List や Array) を考えてみる
+
++++
+
+## ジェネリクスを使う理由
+
+### ジェネリクスがないとき
+
+```ts
+// number用のリスト
+class NumList { ... }
+// string用のリスト
+class StringList { ... }
+// Hogeクラスのリスト
+class HogeList { ... }
+// 最終手段
+class AnyList { ... }
+```
+
+リストを作りたい型が増えるたび  
+_~~List_ を実装しないと行けない...
+
++++
+
+## ジェネリクスを使う理由
+
+### ジェネリクスを使う
+
+```ts
+class MyList<T> { ... }
+```
+
+ジェネリクスを使うことで任意の型に対し抽象化できる!
+
++++
+
+## ジェネリクスの制約
+
+渡された引数の _length_ を返す関数を考える
+
+```ts
+const getLength = <T>(arg: T): number => arg.length;
+```
+
++++
+
+## ジェネリクスの制約
+
+### 問題点
+
+型 _T_ に _length_ というプロパティがなかったらランタイムエラーが発生してしまう。
+
++++
+
+## ジェネリクスの制約
+
+### 改善策
+
+```ts
+interface HasLength {
+  length: number;
+}
+
+const getLength = <T extends HasLength>(arg: T): number => arg.length;
+```
+
+- インターフェイスで _length_ があることを保証する
+- それを実装している型という制約をつける
+
++++
+
+## クラスの型で有ることを規制する
+
+ファクトリ関数を作ることを考えると  
+型はクラス（コンストラクタがある）ことを保証しないといけない
+
+```ts
+// cにconstructorが定義されているか判断する
+function create<T>(c): T {
+  return new c();
+}
+```
+
++++
+
+## クラスの型で有ることを規制する
+
+```ts
+function create<T>(c: { new(): T }) => new c();
+```
+
+コンストラクタがあるということは  
+_{new(): T}_ を実装しているということ
+
+---
+
+## 特殊な型
+
+- Intersection 型
+- Union 型
+- 型エイリアス
+- 文字列リテラル型
+- 代数的データ型
+
++++
+
+## Intersection 型
+
+複数の型を１つに連結したもの  
+_A かつ B_ という型
+
+```ts
+interface Hoge {
+  foo: string;
+  bar: number;
+}
+interface Tag {
+  tag: string;
+}
+
+const Obj: Hoge & Tag = {
+  foo: "examle",
+  bar: 42,
+  tag: "test"
+};
+```
+
++++
+
+## Union 型
+
+_A または B_ という型
+
+```ts
+function padLeft(value: string, padding: any) {
+  if (typeof padding === "number") {
+    return Array(padding + 1).join(" ") + value;
+  }
+  if (typeof padding === "string") {
+    return padding + value;
+  }
+  throw new Error(`Expected string or number, got '${padding}'.`);
+}
+padLeft("Hello world", 4);
+padLeft("Hello world", true); // run time error!!
+```
+
++++
+
+## Union 型
+
+_any_ を使うとなんでも渡せてしまうのでランタイムエラーの心配がある
+
+```ts
+function padLeft(value: string, padding: number | string) {
+  if (typeof padding === "number") {
+    return Array(padding + 1).join(" ") + value;
+  }
+  if (typeof padding === "string") {
+    return padding + value;
+  }
+}
+padLeft("Hello world", 4);
+padLeft("Hello world", true); // compile error!!
+```
+
++++
+
+## 型の保護と識別
+
+```ts
+interface Fish {
+  swim();
+  layEggs();
+}
+interface Bird {
+  fly();
+  layEggs();
+}
+
+const getPet = (): Fish | Bird => { ... }
+
+const pet = getPet();
+pet.layEggs();
+pet.swim(); // Error
+```
+
+ランタイムで _pet_ が _Bird_ だったらエラーになってしまうのでコンパイルエラー
+
++++
+
+## 型の保護と識別
+
+```ts
+const pet = getPet();
+
+// if (pet.swim) <- エラー
+if ((<Fish>pet).swim) {
+  (<Fish>pet).swim();
+} else {
+  (pet as Bird).fly();
+}
+```
+
+型注釈をして判定する
+
++++
+
+## 型の保護と識別
+
+ユーザー定義の型の保護をする関数を作る  
+「型述語」を返す関数を定義する
+
+```ts
+function isFish(pet: Fish | Bird): pet is Fish {
+  return (<Fish>pet).swim !== undefined;
+}
+
+if (isFish(pet)) {
+  // pet type's is Fish
+  pet.swim();
+} else {
+  // pet type's is Bird
+  pet.fly();
+}
+```
+
++++
+
+## 型エイリアス
+
+既存の型に別の型名をつけることが可能  
+コードの可読性が上がる
+
++++
+
+## 型エイリアス
+
+```ts
+type FirstName = string;
+type LastName = string;
+type FullName = [string, string];
+type Name = FirstName | LastName | FullName;
+
+const callName = (name: Name): void => {
+  if (typeof name === "string") {
+    console.log(name);
+  } else {
+    console.log(name.join(" "));
+  }
+};
+```
+
+名前を表す型として _FirstName_, _LastName_, _FullName_, _Name_ を作る
+
++++
+
+## 文字列リテラル型
+
+文字列が持たなければいけない厳密な値を強制できる
+
++++
+
+## 利用例
+
+```ts
+type Easing
+  = 'ease-in'
+  | 'ease-out'
+  | 'ease-in-out'
+
+function EaseAnimation(func: Easing) { ... }
+```
+
+_Easing_ という型は、 _'ease-in'_, _'ease-out'_, _'ease-in-out'_ という  
+３つの文字列の値しか受け付けない型
+
++++
+
+## 利用例
+
+```ts
+function createElement(tagName: "img"): HTMLImageElement;
+function createElement(tagName: "input"): HTMLInputElement;
+// ... その他のオーバーロード ...
+function createElement(tagName: string): Element {
+  // ... 処理コード ...
+}
+```
+
+オーバーロードを区別する方法として利用
+
++++
+
+## 代数的データ型
+
+1 個以上のオブジェクトがあり、各オブジェクトには 0 個以上の要素がある型  
+３つの要素で表現できる
+
+1. 文字列リテラル型
+2. Union 型
+3. 型の保護
+
++++
+
+## 利用例
+
+形を表現する型を考える
+
+```ts
+interface Square {
+  //正方形
+  kind: "square";
+  size: number; //サイズ
+}
+interface Rectangle {
+  //長方形
+  kind: "rectangle";
+  width: number; //幅
+  height: number; //高さ
+}
+interface Circle {
+  //円
+  kind: "circle";
+  radius: number; //半径
+}
+```
+
++++
+
+## 利用例
+
+```ts
+type Shape = Square | Rectangle | Circle;
+
+function area(s: Shape) {
+  //面積
+  switch (s.kind) {
+    case "square":
+      return s.size * s.size;
+    case "rectangle":
+      return s.height * s.width;
+    case "circle":
+      return Math.PI * s.radius ** 2;
+  }
+}
+```
+
+各 interface を UnionType で _Shape_ 型にして _kind_ で「型の保護」をしている
+
+---
+
+## 質問タイム
